@@ -10,7 +10,6 @@ project(${PROJECT_NAME})
 
 option(VEC_REPORT "Display compilation vectorization reports." OFF)
 option(DEBUG_BUILD "Attach debug information to the executables." OFF)
-option(BUILD_VERTICA_LIB "Build the .so library with UDFs for Vertica" ON)
 option(BUILD_VERTICA_TEST_DRIVER "Build a test program to show basic functionality of the underlying HLL algorithm" OFF)
 option(BUILD_TESTS "Build all tests." OFF)
 
@@ -35,31 +34,28 @@ endif()
 #####################
 ##  BUILD TARGETS  ##
 #####################
-
-if (BUILD_VERTICA_LIB)
-  # Here we say where g++ should look for include files
-  set(SDK_HOME /opt/vertica/sdk CACHE FILEPATH "Path to the Vertica SDK, by default /opt/vertica/sdk")
-  if(NOT EXISTS ${SDK_HOME})
-    message(FATAL_ERROR "Could not build. No SDK found at ${SDK_HOME} (maybe retry with -DSDK_HOME=<sdk_path>).")
-  endif()
-
-  # Here we add all source files to appear in libhll.so
-  set(VERTICA_SRC ${VERTICA_INCLUDE}/Vertica.h ${VERTICA_INCLUDE}/BuildInfo.h ${VERTICA_INCLUDE}/Vertica.cpp)
-
-  # HLL SRC
-  set(HLL_SRC ${VERTICA_SRC})
-
-  add_library(hlldruid SHARED ${HLL_SRC} src/hll-druid/hll_druid.cpp src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
-
-  set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-  # Installation process just copies the binary HLL to Vertica lib folder
-  set(LIB_DIR /opt/vertica/lib)
-  install(
-    TARGETS hlldruid
-    DESTINATION ${LIB_DIR}
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-  )
+# Here we say where g++ should look for include files
+set(SDK_HOME /opt/vertica/sdk CACHE FILEPATH "Path to the Vertica SDK, by default /opt/vertica/sdk")
+if(NOT EXISTS ${SDK_HOME})
+  message(FATAL_ERROR "Could not build. No SDK found at ${SDK_HOME} (maybe retry with -DSDK_HOME=<sdk_path>).")
 endif()
+
+set(VERTICA_INCLUDE ${SDK_HOME}/include)
+include_directories(${VERTICA_INCLUDE} include src)
+
+# Here we add all source files to appear in libhll.so
+set(SOURCES src/hll-druid/hll_druid.cpp ${VERTICA_INCLUDE}/Vertica.h ${VERTICA_INCLUDE}/BuildInfo.h ${VERTICA_INCLUDE}/Vertica.cpp)
+
+add_library(hlldruid SHARED ${SOURCES} src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
+
+set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+# Installation process just copies the binary HLL to Vertica lib folder
+set(LIB_DIR /opt/vertica/lib)
+install(
+  TARGETS hlldruid
+  DESTINATION ${LIB_DIR}
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
 
 if (BUILD_VERTICA_TEST_DRIVER)
   add_executable(hll_druid_driver tests/hll-druid/hll_druid_driver.cpp src/hll-druid/hll_druid.cpp src/hll-druid/murmur3_hash.cpp)
