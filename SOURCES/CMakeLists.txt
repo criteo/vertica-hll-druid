@@ -11,7 +11,6 @@ project(${PROJECT_NAME})
 option(VEC_REPORT "Display compilation vectorization reports." OFF)
 option(DEBUG_BUILD "Attach debug information to the executables." OFF)
 option(BUILD_VERTICA_LIB "Build the .so library with UDFs for Vertica" ON)
-# option(BUILD_HIVE_LIB "Build the .so library with Hive-friendly interface" OFF)
 option(BUILD_VERTICA_TEST_DRIVER "Build a test program to show basic functionality of the underlying HLL algorithm" OFF)
 option(BUILD_TESTS "Build all tests." OFF)
 
@@ -44,16 +43,14 @@ if (BUILD_VERTICA_LIB)
     message(FATAL_ERROR "Could not build. No SDK found at ${SDK_HOME} (maybe retry with -DSDK_HOME=<sdk_path>).")
   endif()
 
+  # Here we add all source files to appear in libhll.so
+  set(VERTICA_SRC ${VERTICA_INCLUDE}/Vertica.h ${VERTICA_INCLUDE}/BuildInfo.h ${VERTICA_INCLUDE}/Vertica.cpp)
+
   # HLL SRC
   set(HLL_SRC ${VERTICA_SRC})
-  # set(HLL_SRC ${VERTICA_SRC} src/hll-criteo/bias_corrected_estimate.cpp src/hll-criteo/linear_counting.cpp src/hll-criteo/hll_vertica.cpp)
 
-  # add_library(hll SHARED ${HLL_SRC} src/hll-criteo/HllCombine.cpp src/hll-criteo/HllDistinctCount.cpp src/hll-criteo/HllCreateSynopsis.cpp)
-  # add_library(loglogbeta SHARED ${HLL_SRC} src/hll-criteo/LogLogBetaDistinctCount.cpp)
   add_library(hlldruid SHARED ${HLL_SRC} src/hll-druid/hll_druid.cpp src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
 
-  # set_target_properties(hll PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-  # set_target_properties(loglogbeta PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   # Installation process just copies the binary HLL to Vertica lib folder
   set(LIB_DIR /opt/vertica/lib)
@@ -63,26 +60,6 @@ if (BUILD_VERTICA_LIB)
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
 endif()
-
-# if (BUILD_HIVE_LIB)
-#   set(HLL_SRC src/hll-criteo/bias_corrected_estimate.cpp src/hll-criteo/linear_counting.cpp src/hll-criteo/HllJava.cpp)
-#   # define HIVE_BUILD macro to compile the code without any call to glib's memcpy. This is to avoid troubles when using
-#   # HLL's code through JNA. We will make use of this macro in the following way:
-#   # #ifdef HIVE_BUILD
-#   #     for(uint32_t i=0; i<numberOfBuckets; ++i) {
-#   #         synopsis[i] = other.synopsis[i];
-#   #     }
-#   # #else
-#   #     memcpy(synopsis, other.synopsis, numberOfBuckets);
-#   # #endif
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHIVE_BUILD")
-
-#   # we define this macro to use an older version of C++11 ABI
-#   # this is because we build first on newer machines and then copy the lib
-#   # to older systems, where the new C++ ABI is not available
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-#   add_library(hllhive SHARED ${HLL_SRC})
-# endif()
 
 if (BUILD_VERTICA_TEST_DRIVER)
   add_executable(hll_druid_driver tests/hll-druid/hll_druid_driver.cpp src/hll-druid/hll_druid.cpp src/hll-druid/murmur3_hash.cpp)
