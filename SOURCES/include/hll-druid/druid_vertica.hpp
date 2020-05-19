@@ -50,9 +50,12 @@ public:
         try {
             HllDruid hll = hllWrap(aggs);
             do {
-                hll.fold(
-                    reinterpret_cast<const uint8_t *>(aggsOther.getStringRef(0).data()),
-                    aggsOther.getStringRef(0).length());
+                if (!aggsOther.getStringRef(0).isNull()) {
+                    hll.fold(
+                        reinterpret_cast<const uint8_t *>(aggsOther.getStringRef(0).data()),
+                        aggsOther.getStringRef(0).length()
+                    );
+                }
             } while (aggsOther.next());
         } catch (std::exception &e) {
             vt_report_error(0, "Exception while combining intermediates: [%s]", e.what());

@@ -9,22 +9,32 @@ public:
   }
 
   virtual void doAggregate(HllDruid &hll, BlockReader &argReader) {
-    hll.fold(
-        reinterpret_cast<const uint8_t *>(argReader.getStringRef(0).data()),
-        argReader.getStringRef(0).length());
+    if (!argReader.getStringRef(0).isNull()) {
+      hll.fold(
+          reinterpret_cast<const uint8_t *>(argReader.getStringRef(0).data()),
+          argReader.getStringRef(0).length());
+    }
   }
 
   virtual void terminate(ServerInterface &srvInterface,
                          BlockWriter &resWriter,
                          IntermediateAggs &aggs)
   {
-    HllDruid hll = hllWrap(aggs);
-    resWriter.getStringRef().alloc(hll.getSerializedBufferSize());
-    size_t length = 0;
-    hll.serialize(
-      reinterpret_cast<uint8_t *>(resWriter.getStringRef().data()),
-      length);
-    resWriter.next();
+    try
+    {
+      HllDruid hll = hllWrap(aggs);
+      resWriter.getStringRef().alloc(hll.getSerializedBufferSize());
+      size_t length = 0;
+      hll.serialize(
+        reinterpret_cast<uint8_t *>(resWriter.getStringRef().data()),
+        length);
+      resWriter.next();
+    }
+    catch (std::exception &e)
+    {
+      vt_report_error(0, "Exception while terminating intermediate aggregates: [%s]", e.what());
+    }
+
   }
 };
 

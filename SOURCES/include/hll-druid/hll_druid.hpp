@@ -3,10 +3,16 @@
 
 #include <stdexcept>
 #include <stdint.h>
-#include <byteswap.h>
 #include <cstring>
 #include <iostream>
 #include <math.h>
+
+#  if defined(__APPLE__)
+#    include <libkern/OSByteOrder.h>
+#    define __bswap_32 OSSwapInt32
+#  else
+#    include <byteswap.h>
+#  endif
 
 #include "../hll_utils.hpp"
 #include "murmur3_hash.hpp"

@@ -7,9 +7,11 @@ class HllDruidDistinctCount : public DruidAggregateFunction
 {
 public:
   virtual void doAggregate(HllDruid &hll, BlockReader &argReader) {
-    hll.fold(
-        reinterpret_cast<const uint8_t *>(argReader.getStringRef(0).data()),
-        argReader.getStringRef(0).length());
+    if (!argReader.getStringRef(0).isNull()) {
+      hll.fold(
+          reinterpret_cast<const uint8_t *>(argReader.getStringRef(0).data()),
+          argReader.getStringRef(0).length());
+    }
   }
 
   virtual void terminate(ServerInterface &srvInterface,
