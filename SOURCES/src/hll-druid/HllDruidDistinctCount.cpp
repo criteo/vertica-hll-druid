@@ -53,6 +53,10 @@ class HllDruidDistinctCountFactory : public DruidAggregateFunctionFactory<HllDru
   {
     outputTypes.addInt();
   }
+
+public:
+  HllDruidCreateSynopsisFactory() {vol = IMMUTABLE};
+
 };
 
 RegisterFactory(HllDruidDistinctCountFactory);

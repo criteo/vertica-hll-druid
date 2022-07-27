@@ -54,6 +54,10 @@ class HllDruidCreateSynopsisFactory : public DruidAggregateFunctionFactory<HllDr
   {
     outputTypes.addVarbinary(NUM_BYTES_FOR_BUCKETS + NUM_HEADER_BYTES);
   }
+
+public:
+  HllDruidCreateSynopsisFactory() {vol = IMMUTABLE};
+
 };
 
 RegisterFactory(HllDruidCreateSynopsisFactory);
