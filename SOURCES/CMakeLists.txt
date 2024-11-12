@@ -62,7 +62,9 @@ set(SOURCES src/hll-druid/hll_druid.cpp ${VERTICA_INCLUDE}/Vertica.h ${VERTICA_I
 
 add_library(hlldruid SHARED ${SOURCES} src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
 
-set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+#set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+# do not use -march=native UNLESS you are building on your target machine itself
+set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS}")
 # Installation process just copies the binary HLL to Vertica lib folder
 if (INSTALL_PREFIX_PATH)
   set(LIB_DIR ${INSTALL_PREFIX_PATH}/opt/vertica/lib)

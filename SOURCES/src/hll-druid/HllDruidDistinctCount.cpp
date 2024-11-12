@@ -59,8 +59,8 @@ RegisterFactory(HllDruidDistinctCountFactory);
 RegisterLibrary("Criteo",                                                               // author
                 "",                                                                     // lib_build_tag
                 "0.1",                                                                  // lib_version
-                "7.2.1",                                                                // lib_sdk_version
-                "https://github.com/criteo/vertica-hyperloglog",                        // URL
+                "11.0.1",                                                               // lib_sdk_version
+                "https://github.com/criteo/vertica-hll-druid",                          // URL
                 "Druid HyperLogLog implementation as User Defined Aggregate Functions", // description
                 "",                                                                     // licenses required
                 ""                                                                      // signature

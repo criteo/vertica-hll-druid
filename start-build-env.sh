@@ -1,5 +1,6 @@
 #!/bin/bash
-docker build -t vertica-builder:local .
+_b_env=${1:-gcc8.Dockerfile}
+docker build -f $_b_env -t vertica-builder:local .
 
 rm -rf build
 mkdir -p build
