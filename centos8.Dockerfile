@@ -5,3 +5,4 @@ RUN useradd builder && chown builder: /opt/vertica /sources/ build
 WORKDIR /build
 USER builder
 RUN echo 'source scl_source enable gcc-toolset-9' >> ~/.bashrc
+RUN echo 'echo "# you may build using: cmake /sources; make;" 1>&2; echo;' >> ~/.bashrc

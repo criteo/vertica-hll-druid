@@ -1,10 +1,23 @@
 #!/bin/bash
-_b_env=${1:-gcc8.Dockerfile}
-docker build -f $_b_env -t vertica-builder:local .
+_b_env=${1:-centos8.Dockerfile}
+errout() {
+  _r=$1
+  shift 1;
+  echo $@;
+  exit $_r;
+}
+BUILDER_IMAGE="vertica-builder-hll-druid:local"
+BUILDER_INSTANCE_NAME="vbuilder-hll-druid"
+docker build -f ${_b_env} -t ${BUILDER_IMAGE} .
+test -f /opt/vertica/sdk/include/BuildInfo.h || errout 30 "Vertica SDK is missing. Put it in /opt/vertica/sdk so that /opt/vertica/sdk/include/BuildInfo.h exists"
 
 rm -rf build
 mkdir -p build
-docker kill vbuilder-hlldruid || true
-docker rm vbuilder-hlldruid || true
-docker run --rm --name vbuilder-hlldruid -v=$PWD/SOURCES:/sources  -v=$PWD/build:/build -v=/opt/vertica/sdk:/opt/vertica/sdk  -d vertica-builder:local sleep 3600
-echo "Run docker exec -ti vbuilder-hlldruid bash # now"
+docker kill ${BUILDER_INSTANCE_NAME} || true
+sleep 1
+docker rm ${BUILDER_INSTANCE_NAME} || true
+sleep 1
+docker run --rm --name ${BUILDER_INSTANCE_NAME} -v=$PWD/SOURCES:/sources -v=$PWD/build:/build -v=/opt/vertica/sdk:/opt/vertica/sdk  -d $BUILDER_IMAGE sleep 3600
+echo "Run docker exec -ti ${BUILDER_INSTANCE_NAME} bash # now"
+echo "Then, you may run the following to build"
+echo "cmake /sources; make clean; make"
