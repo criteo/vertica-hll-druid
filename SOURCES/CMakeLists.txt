@@ -13,6 +13,20 @@ option(DEBUG_BUILD "Attach debug information to the executables." OFF)
 option(BUILD_VERTICA_TEST_DRIVER "Build a test program to show basic functionality of the underlying HLL algorithm" OFF)
 option(BUILD_TESTS "Build all tests." OFF)
 
+## When building for Vertica 11, you need to set specific defines
+file(READ "/opt/vertica/sdk/include/BuildInfo.h" buildinfosdk)
+string(REGEX MATCH "#define[ ]+VERTICA_BUILD_ID_SDK_Version_Major[ ]+([0-9]+)" _ ${buildinfosdk})
+set(ver_major ${CMAKE_MATCH_1})
+message("Version", ${ver_major})
+if (${ver_major} LESS_EQUAL 11)
+  add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+  message("Using CXX11 ABI because Vertica <= 11:", ${ver_major})
+else()
+  message("Not using CXX11 ABI because newer SDK than Vertica 11", ${ver_major})
+endif()
+
+## For Vertica 24, you don't need it.
+
 
 #####################
 ##  COMPILE FLAGS  ##
@@ -48,7 +62,9 @@ set(SOURCES src/hll-druid/hll_druid.cpp ${VERTICA_INCLUDE}/Vertica.h ${VERTICA_I
 
 add_library(hlldruid SHARED ${SOURCES} src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
 
-set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+#set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+# do not use -march=native UNLESS you are building on your target machine itself
+set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS}")
 # Installation process just copies the binary HLL to Vertica lib folder
 if (INSTALL_PREFIX_PATH)
   set(LIB_DIR ${INSTALL_PREFIX_PATH}/opt/vertica/lib)

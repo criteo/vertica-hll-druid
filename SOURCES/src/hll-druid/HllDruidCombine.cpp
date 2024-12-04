@@ -64,11 +64,6 @@ class HllDruidCombineFactory : public DruidAggregateFunctionFactory<HllDruidComb
   {
     outputTypes.addVarbinary(NUM_BYTES_FOR_BUCKETS + NUM_HEADER_BYTES);
   }
-
-public:
-  HllDruidCombineFactory() {vol = IMMUTABLE};
-
-
 };
 
 RegisterFactory(HllDruidCombineFactory);
