@@ -13,8 +13,15 @@ option(DEBUG_BUILD "Attach debug information to the executables." OFF)
 option(BUILD_VERTICA_TEST_DRIVER "Build a test program to show basic functionality of the underlying HLL algorithm" OFF)
 option(BUILD_TESTS "Build all tests." OFF)
 
+# Here we say where g++ should look for include files
+set(SDK_HOME /opt/vertica/sdk CACHE FILEPATH "Path to the Vertica SDK, by default /opt/vertica/sdk")
+if(NOT EXISTS ${SDK_HOME})
+  message(FATAL_ERROR "Could not build. No SDK found at ${SDK_HOME} (maybe retry with -DSDK_HOME=<sdk_path>).")
+endif()
+set(VERTICA_INCLUDE ${SDK_HOME}/include)
+
 ## When building for Vertica 11, you need to set specific defines
-file(READ "/opt/vertica/sdk/include/BuildInfo.h" buildinfosdk)
+file(READ "${VERTICA_INCLUDE}/BuildInfo.h" buildinfosdk)
 string(REGEX MATCH "#define[ ]+VERTICA_BUILD_ID_SDK_Version_Major[ ]+([0-9]+)" _ ${buildinfosdk})
 set(ver_major ${CMAKE_MATCH_1})
 message("Version", ${ver_major})
@@ -34,9 +41,6 @@ endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -O3 -std=c++11 -Wno-unused-value")
 
-set(VERTICA_INCLUDE ${SDK_HOME}/include)
-include_directories(${VERTICA_INCLUDE} include src)
-
 if(DEBUG_BUILD)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
@@ -48,13 +52,6 @@ endif()
 #####################
 ##  BUILD TARGETS  ##
 #####################
-# Here we say where g++ should look for include files
-set(SDK_HOME /opt/vertica/sdk CACHE FILEPATH "Path to the Vertica SDK, by default /opt/vertica/sdk")
-if(NOT EXISTS ${SDK_HOME})
-  message(FATAL_ERROR "Could not build. No SDK found at ${SDK_HOME} (maybe retry with -DSDK_HOME=<sdk_path>).")
-endif()
-
-set(VERTICA_INCLUDE ${SDK_HOME}/include)
 include_directories(${VERTICA_INCLUDE} include src)
 
 # Here we add all source files to appear in libhll.so
