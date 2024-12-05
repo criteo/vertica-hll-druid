@@ -20,16 +20,16 @@ if(NOT EXISTS ${SDK_HOME})
 endif()
 set(VERTICA_INCLUDE ${SDK_HOME}/include)
 
-## When building for Vertica 11, you need to set specific defines
+## When building for Vertica 12, you need to set specific defines
 file(READ "${VERTICA_INCLUDE}/BuildInfo.h" buildinfosdk)
 string(REGEX MATCH "#define[ ]+VERTICA_BUILD_ID_SDK_Version_Major[ ]+([0-9]+)" _ ${buildinfosdk})
 set(ver_major ${CMAKE_MATCH_1})
 message("Version", ${ver_major})
-if (${ver_major} LESS_EQUAL 11)
+if (${ver_major} LESS_EQUAL 12)
   add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-  message("Using CXX11 ABI because Vertica <= 11:", ${ver_major})
+  message("Using CXX11 ABI because Vertica <= 12:", ${ver_major})
 else()
-  message("Not using CXX11 ABI because newer SDK than Vertica 11", ${ver_major})
+  message("Not using CXX11 ABI because newer SDK than Vertica 12", ${ver_major})
 endif()
 
 ## For Vertica 24, you don't need it.
