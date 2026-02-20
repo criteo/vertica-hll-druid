@@ -57,7 +57,7 @@ include_directories(${VERTICA_INCLUDE} include src)
 # Here we add all source files to appear in libhll.so
 set(SOURCES src/hll-druid/hll_druid.cpp ${VERTICA_INCLUDE}/Vertica.h ${VERTICA_INCLUDE}/BuildInfo.h ${VERTICA_INCLUDE}/Vertica.cpp)
 
-add_library(hlldruid SHARED ${SOURCES} src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
+add_library(hlldruid SHARED ${SOURCES} src/hll-druid/HllDruidCombine.cpp src/hll-druid/HllDruidCreateSynopsis.cpp src/hll-druid/HllDruidDistinctCount.cpp src/hll-druid/HllDruidWindowDistinctCount.cpp src/hll-druid/murmur3_hash.cpp)
 
 #set_target_properties(hlldruid PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 # do not use -march=native UNLESS you are building on your target machine itself
